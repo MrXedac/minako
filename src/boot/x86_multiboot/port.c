@@ -326,6 +326,13 @@ uint32_t inlGlue(uint32_t port, gate_ctx_t *ctx)
  */
 uint32_t timerGlue(void)
 {
-	extern uint32_t timer_ticks;
-	return timer_ticks;
+	/* extern uint32_t timer_ticks;
+	return timer_ticks; */
+	DEBUG(CRITICAL, "Requested RDTSC !\n");
+	uint32_t ret1, ret2;
+	__asm volatile("RDTSC; \
+					MOV %%EAX, %0; \
+					MOV %%EDX, %1"
+				   : "=r"(ret1), "=r"(ret2));
+	return ret1; /* Get RET2 from EDX */
 }
