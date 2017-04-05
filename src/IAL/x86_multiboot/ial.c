@@ -113,6 +113,9 @@ void saveCaller(int_ctx_t *is)
 		memcpy((void*)VIDT_CTX_BUFFER, is, SIZEOF_CTX);
 		/* dumpRegs((int_ctx_t*)VIDT_CTX_BUFFER); */
 		dumpRegs(VIDT_CTX_BUFFER, TRACE);
+		
+		/* Partition is interrupted when it shouldn't be, this is tricky */
+		*(uintptr_t*)(VIDT_CTX_BUFFER - sizeof(uintptr_t)) = *PIPFLAGS;
 	}
 	else
 	{
@@ -124,10 +127,11 @@ void saveCaller(int_ctx_t *is)
 		IAL_DEBUG(INFO, "Set resume stack to %x.\n", OPTIONAL_REG(is, useresp) - SIZEOF_CTX);
 		
 		dumpRegs((void*)(OPTIONAL_REG(is, useresp)) - SIZEOF_CTX, TRACE);
+
+		/* Push current state as well, which is stored into 0xFFFFFFFC */
+		*(uintptr_t*)(OPTIONAL_REG(is, useresp) - SIZEOF_CTX - sizeof(uintptr_t)) = *PIPFLAGS;
 	}
-	
-	/* Push current state as well, which is stored into 0xFFFFFFFC */
-	*(uintptr_t*)(OPTIONAL_REG(is, useresp) - SIZEOF_CTX - sizeof(uintptr_t)) = *PIPFLAGS;
+
 	
 	
 	
@@ -514,7 +518,7 @@ genericHandler (int_ctx_t *is)
 	vint = is->int_no + 1;
 	if (vint >= MAX_VINT)
 	{
-		IAL_DEBUG(ERROR, "Invalid interrupt number %d ?\n", vint);
+		IAL_DEBUG(ERROR, "Invalid interrupt number %x ?\n", vint);
 		return;
 	}
 	
@@ -633,8 +637,8 @@ dispatch2 (uint32_t partition, uint32_t vint,
  * \fn void resume (uint32_t descriptor, user_ctx_role_t ctxNo)
  * \brief 		Activate a partition and switch to context
  * \param descriptor	The partition to resume (0 for parent)
- * \param ctxNo 	Index of context to resume */
-void resume (uint32_t descriptor, user_ctx_role_t ctxNo)
+ * \param pipflags 	PipFlags value */
+void resume (uint32_t descriptor, uint32_t pipflags)
 {
 	uintptr_t to, from;
 	
@@ -700,7 +704,7 @@ void resume (uint32_t descriptor, user_ctx_role_t ctxNo)
 	/* Build user context from interrupted context */
 	user_ctx_t ctxToResume;
 	ctxToResume.eip = intctx->eip;
-	ctxToResume.pipflags = 0x0; /* VSTI */
+	ctxToResume.pipflags = pipflags; /* VSTI */
 	ctxToResume.eflags = intctx->eflags;
 	memcpy((void*)&(ctxToResume.regs), &(intctx->regs), sizeof(pushad_regs_t));
 	ctxToResume.regs.esp = intctx->useresp;

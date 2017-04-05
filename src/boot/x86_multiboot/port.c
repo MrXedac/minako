@@ -328,7 +328,7 @@ uint32_t timerGlue(void)
 {
 	/* extern uint32_t timer_ticks;
 	return timer_ticks; */
-	DEBUG(CRITICAL, "Requested RDTSC !\n");
+	// DEBUG(CRITICAL, "Requested RDTSC !\n");
 	uint32_t ret1, ret2;
 	__asm volatile("RDTSC; \
 					MOV %%EAX, %0; \

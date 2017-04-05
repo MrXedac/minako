@@ -194,6 +194,13 @@ int LinuxBootstrap(uint32_t base, uint32_t length, uint32_t load_addr, task_t* p
 	mapPageWrapper((void*)linux_console, part->part, (void*)LINUX_LOADER_CONSOLE);
 	memset((void*)linux_console, 0x00000000, 0x1000);
 	
+	/* Allocate an early interrupt stack. */
+	#define LINUX_INT_STACK 0xFFFFE000
+	LINUX_LOG("Allocating early interrupt stack...\n");
+	uintptr_t linux_istack = (uintptr_t)allocPage();
+	mapPageWrapper((void*)linux_istack, part->part, (void*)LINUX_INT_STACK);
+	memset((void*)linux_istack, 0x00000000, 0x1000);
+	
 	/* Now map an early-boot stack */
 	LINUX_LOG("Giving a whole bunch of memory for Linux to toy with...");
 	for(addr = 0x1203000; addr <= 0x10000000; addr += 0x1000)

@@ -47,6 +47,20 @@
 Require Import Model.Hardware Model.ADT Model.Lib Model.MAL Bool Core.Internal Arith  List.
 Import List.ListNotations.
 
+Definition mappedInChild (vaChild : vaddr) : LLI vaddr :=
+  perform kmapVaChild := checkKernelMap vaChild in
+  (**  Get the current partition  *)
+  perform currentPart := getCurPartition in
+  (** Get the number of levels *)
+  perform nbL :=  getNbLevel in
+  (** access to the first shadow page of the current page directory *)
+  perform currentShadow1 := getFstShadow currentPart in
+  perform ptVaChildFromSh1 := getTableAddr currentShadow1 vaChild nbL in
+  perform isNull := comparePageToNull ptVaChildFromSh1 in if isNull then ret defaultVAddr else
+  perform idxVaChild := getIndexOfAddr vaChild fstLevel in
+  (** 1 if the page is derived (use boolean) *)
+  readVirEntry ptVaChildFromSh1 idxVaChild.
+
 (** ** The createPartition PIP service
 
     The [createPartition] function creates a new child (sub-partition) into the 

@@ -57,6 +57,7 @@ extern void *cg_dispatchGlue;
 extern void *cg_timerGlue;
 extern void *cg_resume;
 extern void *cg_removeVAddr;
+extern void *cg_mappedInChild;
 
 struct gdt_entry_s {
 	void *handler;
@@ -83,6 +84,7 @@ struct gdt_entry_s gdtEntries[] = {
 	{&cg_timerGlue, 	0, 0x3, 0x08},
 	{&cg_resume, 		2, 0x3, 0x08},
 	{&cg_removeVAddr, 	2, 0x3, 0x08},
+	{&cg_mappedInChild,	1, 0x3, 0x08},
 };
 
 #define CG_COUNT (sizeof(gdtEntries)/sizeof(struct gdt_entry_s))

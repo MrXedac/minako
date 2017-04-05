@@ -37,7 +37,7 @@ global isr%1
 isr%1:
 	cli
 	push byte 0
-	push byte %1
+	push %1
 	jmp isrCommonStub
 %endmacro
 
@@ -46,7 +46,7 @@ isr%1:
 global isr%1
 isr%1:
 	cli
-	push byte %1
+	push %1
 	jmp isrCommonStub
 %endmacro
 
@@ -224,5 +224,5 @@ IRQ_STUB 15 , 47
 %assign i 48
 %rep 208
 ISR_NOERRCODE i
-%assign i i+1 
+%assign i i+1
 %endrep

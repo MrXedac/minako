@@ -74,7 +74,7 @@ INTERRUPT_HANDLER(pfAsm, pfHandler)
 			uint32_t pagePhys = data1 & 0x0FFFF000;
 			uint32_t pageVirt = data1 & 0xFFFFF000;
 			uint32_t tmp = unmapPage(caller, pagePhys);
-			//log("Unmapping VAddr "); puthex(pagePhys); puts(" to remap VAddr "); puthex(tmp); puts(" -> "); puthex(pageVirt); puts("\n");
+			/* log("Unmapping VAddr "); puthex(pagePhys); puts(" to remap VAddr "); puthex(tmp); puts(" -> "); puthex(pageVirt); puts("\n"); */
 			if(mapPageWrapper(tmp, caller, pageVirt))
 			{
 				//log("Linux seems to have tried to access hardware memory. Mapping a new pase \"as if\".\n");
@@ -127,8 +127,14 @@ INTERRUPT_HANDLER(timerAsm, timerHandler)
     log("Interrupted partition was ");
     puthex(caller);
     puts("\n");*/
-
-	resume((uint32_t)linuxDescriptor.part, 0);
+	if(caller == (uint32_t)linuxDescriptor.part)
+		resume((uint32_t)linuxDescriptor.part, 0);
+	else
+	{
+		/* log("Caller wasn't Linux. This isn't supposed to happen.\n");
+		for(;;); */
+		dispatch((uint32_t)linuxDescriptor.part, 1, caller, 0);
+	}
 END_OF_INTERRUPT
 
 /*
