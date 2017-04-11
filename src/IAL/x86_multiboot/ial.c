@@ -102,7 +102,7 @@ void dumpRegs(int_ctx_t* is, uint32_t outputLevel)
 	}
 }
 
-void saveCaller(int_ctx_t *is)
+uint32_t saveCaller(int_ctx_t *is)
 {
 	IAL_DEBUG(INFO, "Saving interrupted state matching registers at %x\n", is);
 	
@@ -116,6 +116,8 @@ void saveCaller(int_ctx_t *is)
 		
 		/* Partition is interrupted when it shouldn't be, this is tricky */
 		*(uintptr_t*)(VIDT_CTX_BUFFER - sizeof(uintptr_t)) = *PIPFLAGS;
+		
+		return (uint32_t)VIDT_CTX_BUFFER;
 	}
 	else
 	{
@@ -130,6 +132,8 @@ void saveCaller(int_ctx_t *is)
 
 		/* Push current state as well, which is stored into 0xFFFFFFFC */
 		*(uintptr_t*)(OPTIONAL_REG(is, useresp) - SIZEOF_CTX - sizeof(uintptr_t)) = *PIPFLAGS;
+		
+		return (uint32_t)(OPTIONAL_REG(is, useresp) - SIZEOF_CTX);
 	}
 
 	
@@ -436,7 +440,6 @@ genericHandler (int_ctx_t *is)
 	uint32_t vint, target, from, data1, data2;
 	
 	data1 = 0;
-	data2 = 0;
 	
 	/* A bit of the handling is different with hardware interrupts */
 	if(INT_IRQ(is->int_no))
@@ -523,10 +526,10 @@ genericHandler (int_ctx_t *is)
 	}
 	
 	/* Current partition has been interrupted. Save its state. */
-	saveCaller(is);
+	uint32_t stackAddr = saveCaller(is);
 	
 	//ASSERT(0);
-	dispatch2(target, vint, data1, data2, from);
+	dispatch2(target, vint, data1, stackAddr, from);
 }
 
 /*! \fn dispatchGlue (uint32_t descriptor, uint32_t vint, uint32_t data1, uint32_t data2)
@@ -613,7 +616,11 @@ dispatch2 (uint32_t partition, uint32_t vint,
 	ASSERT(vint < MAX_VINT);
 	
 	/* Check VIDT validity */
-	ASSERT((vidt=readVidt(partition)) != (uint32_t)-1);
+	if(!((vidt=readVidt(partition)) != (uint32_t)-1))
+	{
+		IAL_DEBUG(CRITICAL, "0ops. Partition=%x, vint=%x, caller=%x\n", partition, vint, caller);
+		ASSERT(0);
+	}
 	
 	/* Read VIDT info */
 	readVidtInfo(vidt, vint, &eip, &esp, &vflags);
@@ -659,6 +666,12 @@ void resume (uint32_t descriptor, uint32_t pipflags)
 			/* Get VAddr of caller in parent partition */
 			from = readPhysicalNoFlags(PARTITION_CURRENT, indexPR());
 		}
+	}
+	else if (descriptor == 0xFFFFFFFF)
+	{
+		/* A child kernel is resuming itself */
+		to = PARTITION_CURRENT;
+		from = PARTITION_CURRENT;
 	}
 	/* A parent notifies a child */
 	else {

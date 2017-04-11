@@ -168,6 +168,9 @@ $(TARGET_DIR)/$(PARTITION).bin:
 qemu:
 	$(QEMU) $(QEMUARGS)
 
+qemu-dbg:
+	$(QEMU) $(QEMUARGS) -S -s
+
 test:
 	cd tests/MAL && make TARGET=$(TARGET) all
 

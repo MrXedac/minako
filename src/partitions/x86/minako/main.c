@@ -71,7 +71,7 @@ INTERRUPT_HANDLER(pfAsm, pfHandler)
 		puts(" triggered a Page Fault, please wait.\n");*/
 		if(data1 >= 0xC0000000)
 		{
-			uint32_t pagePhys = data1 & 0x0FFFF000;
+			uint32_t pagePhys = data1 - 0xC0000000;
 			uint32_t pageVirt = data1 & 0xFFFFF000;
 			uint32_t tmp = unmapPage(caller, pagePhys);
 			/* log("Unmapping VAddr "); puthex(pagePhys); puts(" to remap VAddr "); puthex(tmp); puts(" -> "); puthex(pageVirt); puts("\n"); */
@@ -123,17 +123,22 @@ INTERRUPT_HANDLER(gpfAsm, gpfHandler)
 END_OF_INTERRUPT
 
 INTERRUPT_HANDLER(timerAsm, timerHandler)
-    /*log("Timer interrupt !!\n");
-    log("Interrupted partition was ");
-    puthex(caller);
-    puts("\n");*/
-	if(caller == (uint32_t)linuxDescriptor.part)
-		resume((uint32_t)linuxDescriptor.part, 0);
-	else
+	/*if(caller == linuxDescriptor.part)
 	{
-		/* log("Caller wasn't Linux. This isn't supposed to happen.\n");
-		for(;;); */
-		dispatch((uint32_t)linuxDescriptor.part, 1, caller, 0);
+		resume((uint32_t)linuxDescriptor.part, 1);
+	} else dispatch((uint32_t)linuxDescriptor.part, 1, caller, 0);
+
+log("bruh\n");
+for(;;);*/
+	/* cassé */
+	/* Check for Linux's VIDT entry */
+	if((linuxDescriptor.vidt->vint[1].eip) && (linuxDescriptor.vidt->vint[0].eip == 0xDEADBEEF))
+	{
+		/* We got a timer EIP, use timer handler */
+		dispatch((uint32_t)linuxDescriptor.part, 1, caller, data2);
+	} else {
+		/* No handler setup, Linux is in early boot : manually resume setting PipFlags to VCLI */
+		resume((uint32_t)linuxDescriptor.part, 1);
 	}
 END_OF_INTERRUPT
 

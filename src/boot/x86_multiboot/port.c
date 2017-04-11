@@ -41,6 +41,7 @@
 #include "mal.h"
 #include "x86int.h"
 #include "debug.h"
+#include "pic8259.h"
 
 /* Get hardware index from IO-to-Hardware table */
 //extern uint16_t io_to_hardware[X86_MAX_IO];
@@ -60,7 +61,12 @@ ioAccessValid(uint16_t port)
 	hwidx = (uint32_t)(io_to_hardware[port]);*/
 
 	/* return (iomask >> hwidx) & 1; */
-	return 1; // For now, allow any IO. TODO : fix this according to new IAL
+	if(port == PIC1_COMMAND ||
+	   port == PIC2_COMMAND ||
+	   port == PIC1_DATA	||
+	   port == PIC2_DATA)
+		return 0;
+	else return 1; // For now, allow any IO. TODO : fix this according to new IAL
 }
 
 /**
@@ -148,9 +154,11 @@ uint32_t inl(uint16_t port)
 void
 faultToParent(uint32_t data1, uint32_t data2, gate_ctx_t *ctx)
 {
-	DEBUG(WARNING, "faulting to parent, cur part is %x\n", 
+	/*DEBUG(WARNING, "faulting to parent, cur part is %x\n",
 		getCurPartition());
-	dispatchGlue(0, FAULT_FORBIDDEN, 0, data1, data2, ctx);
+	dispatchGlue(0, FAULT_FORBIDDEN, 0, data1, data2, ctx); */
+	DEBUG(CRITICAL, "Forbidden IO access on PIC (port %x, value %x)\n", data1, data2);
+	return;
 }
 
 /**

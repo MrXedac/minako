@@ -203,7 +203,7 @@ int LinuxBootstrap(uint32_t base, uint32_t length, uint32_t load_addr, task_t* p
 	
 	/* Now map an early-boot stack */
 	LINUX_LOG("Giving a whole bunch of memory for Linux to toy with...");
-	for(addr = 0x1203000; addr <= 0x10000000; addr += 0x1000)
+	for(addr = 0x1203000; addr <= 0x16000000; addr += 0x1000)
 	{
 		uintptr_t tmp = (uintptr_t)allocPage();
 		if(mapPageWrapper((void*)tmp, part->part, (void*)addr)) {
