@@ -181,6 +181,11 @@ void main(pip_fpinfo* bootinfo)
 {
 	uint32_t i;
 
+	log("        _             _\n");
+	log("  /\\/\\ (_)_ __   __ _| | _____\n");
+	log(" /    \\| | '_ \\ / _` | |/ / _ \\\n");
+	log("/ /\\/\\ \\ | | | | (_| |   < (_) |\n");
+	log("\\/    \\/_|_| |_|\\__,_|_|\\_\\___/\n");
     log("Minako / Linux Loader\n");
 	log("© Université Lille 1, The Pip Development Team (2015-2017)\n");
 	log("For exclusive use with the Pip proto-kernel.\n");

@@ -1,4 +1,4 @@
 #ifndef __GIT__
 #define __GIT__
-#define GIT_REVISION "1013c0e0190a98daabced1099b1024735f0ed8c1"
+#define GIT_REVISION "1072dd475ddd15d5df094d6fea31bc8664bc7550"
 #endif
