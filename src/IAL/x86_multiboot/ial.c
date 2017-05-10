@@ -422,7 +422,7 @@ genericHandler (int_ctx_t *is)
 		/* Kernel faults should not happen. Panic. */
 		if (isKernel(is->cs))
 		{
-			IAL_DEBUG (CRITICAL, "Encountered fault within kernel. Halting system.\n");
+			IAL_DEBUG (CRITICAL, "Encountered fault (%x) within kernel. Halting system.\n", is->int_no);
 			panic(is);
 		}
 

@@ -155,8 +155,7 @@ int LinuxBootstrap(uint32_t base, uint32_t length, uint32_t load_addr, task_t* p
 			puts(".");
 	}
 	puts("\n");
-	LINUX_LOG("At this point, we should prepare a proper virtual memory environment for Linux. For now, we'll adopt the \"Touche pas à ça p'tit con\" strategy.\n");
-
+	
 	/* At this point we're good, we just need to setup the zero page */
 	#define LINUX_CONFIG_ZEROPAGE 0x1201000
 	LINUX_LOG("Setting up zero page...\n");
