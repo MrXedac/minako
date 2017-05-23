@@ -131,8 +131,8 @@ INTERRUPT_HANDLER(timerAsm, timerHandler)
 log("bruh\n");
 for(;;);*/
 	/* cassé */
-	/* Check for Linux's VIDT entry */
-	if((linuxDescriptor.vidt->vint[1].eip) && (linuxDescriptor.vidt->vint[0].eip == 0xDEADBEEF))
+	/* Check for Linux's VIDT entry, and whether we're in Linux or not */
+	if((linuxDescriptor.vidt->vint[1].eip) && (linuxDescriptor.vidt->vint[0].eip == 0xDEADBEEF) && (caller != linuxDescriptor.part))
 	{
 		/* We got a timer EIP, use timer handler */
 		dispatch((uint32_t)linuxDescriptor.part, 1, caller, data2);
@@ -148,7 +148,7 @@ END_OF_INTERRUPT
 void initInterrupts()
 {
 	//registerInterrupt(33, &timerAsm, (uint32_t*)0x2020000); // We can use the same stack for both interrupts, or choose different stacks, let's play a bit
-	registerInterrupt(33, timerAsm, (uint32_t*)0x2020000); // We can use the same stack for both interrupts, or choose different stacks, let's play a bit
+	registerInterrupt(33, &timerAsm, (uint32_t*)0x2020000); // We can use the same stack for both interrupts, or choose different stacks, let's play a bit
 	registerInterrupt(14, &gpfAsm, (uint32_t*)0x2030000); /* General Protection Fault */
 	registerInterrupt(15, &pfAsm, (uint32_t*)0x2040000); /* Page Fault */
 
